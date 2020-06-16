@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tflite/tflite.dart';
+import 'package:image_picker/image_picker.dart';
 
 void main() => runApp(App());
 
@@ -23,7 +24,7 @@ class App extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Image Autoencoder'),
     );
   }
 }
@@ -47,10 +48,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  bool _busy = false;
 
+  Future predictImagePicker() async {
+    final _picker = ImagePicker();
+    PickedFile _image = await _picker.getImage(source: ImageSource.camera);
+    if (_image == null) return;
+    setState(() {
+      _busy = true;
+    });
+    // todo predictimage
+  }
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> stackChildren = [];
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -63,32 +75,14 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Future text',
-            ),
-          ],
-        ),
+      body: Stack(
+        children: stackChildren,
       ), // This trailing comma makes auto-formatting nicer for build methods.
+      floatingActionButton: FloatingActionButton(
+        onPressed: predictImagePicker,
+        tooltip: 'Select Image',
+        child: Icon(Icons.image),
+      ),
     );
   }
 }
