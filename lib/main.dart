@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tflite/tflite.dart';
 import 'package:image_picker/image_picker.dart';
 
 void main() => runApp(App());
 
-//const String autoencoder = "Autoencoder";
+const String model = "ConvAutoencoder";
 
 class App extends StatelessWidget {
   // This widget is the root of your application.
@@ -24,7 +25,7 @@ class App extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Image Autoencoder'),
+      home: MyHomePage(title: 'Image ConvAutoencoder'),
     );
   }
 }
@@ -49,20 +50,65 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   bool _busy = false;
+  PickedFile _image;
+  String _model = model;
+  List _recognitions;
 
   Future predictImagePicker() async {
     final _picker = ImagePicker();
-    PickedFile _image = await _picker.getImage(source: ImageSource.camera);
+    _image = await _picker.getImage(source: ImageSource.camera);
     if (_image == null) return;
     setState(() {
       _busy = true;
     });
-    // todo predictimage
+    predictImage(_image);
+  }
+
+  Future predictImage(PickedFile image) async {
+    if (image == null) return;
+    //await autoencodeImage(image);
+  }
+
+  Future loadModel() async {
+    Tflite.close();
+    try {
+      String res;
+      res = await Tflite.loadModel(model: "assets/convautoencoder.tflite");
+      print(res);
+    } on PlatformException {
+      print("Failed to load the model.");
+    }
+  }
+
+  onSelect(model) async {
+    setState(() {
+      _busy = true;
+      _model = model;
+      _recognitions = null;
+    });
+    await loadModel();
+    
+    if (_image != null) {
+      predictImage(_image);
+    } else {
+      setState(() {
+        _busy = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     List<Widget> stackChildren = [];
+
+    if (_busy) {
+      stackChildren.add(const Opacity(
+        child: ModalBarrier(dismissible: false, color: Colors.grey),
+        opacity: 0.3,
+      ));
+      stackChildren.add(const Center(child: CircularProgressIndicator()));
+    }
+
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -74,6 +120,20 @@ class _MyHomePageState extends State<MyHomePage> {
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
+        actions: <Widget>[
+          PopupMenuButton<String>(
+            onSelected: onSelect,
+            itemBuilder: (context) {
+              List<PopupMenuEntry<String>> menuEntries = [
+                const PopupMenuItem<String>(
+                  child: Text("ConvAutoencoder"),
+                  value: "ConvAutoencoder",
+                )
+              ];
+              return menuEntries;
+            },
+          )
+        ],
       ),
       body: Stack(
         children: stackChildren,
