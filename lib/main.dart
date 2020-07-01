@@ -66,7 +66,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future predictImage(PickedFile image) async {
     if (image == null) return;
-    //await autoencodeImage(image);
+    await autoencodeImage(image);
+  }
+
+  Future autoencodeImage(PickedFile image) async {
+    var recognitions = await Tflite.runPix2PixOnImage(path: image.path);
+    setState(() {
+      _recognitions = recognitions;
+    });
   }
 
   Future loadModel() async {
