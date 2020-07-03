@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tflite/tflite.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 void main() => runApp(App());
 
@@ -107,6 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     List<Widget> stackChildren = [];
+    Size size = MediaQuery.of(context).size;
 
     if (_busy) {
       stackChildren.add(const Opacity(
@@ -115,6 +117,13 @@ class _MyHomePageState extends State<MyHomePage> {
       ));
       stackChildren.add(const Center(child: CircularProgressIndicator()));
     }
+
+    stackChildren.add(Positioned(
+      top: 0.0,
+      left: 0.0,
+      width: size.width,
+      child: _image == null ? Text('No image selected.') : Image.file(File(_image.path)),
+    ));
 
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
